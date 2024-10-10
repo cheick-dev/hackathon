@@ -25,7 +25,7 @@ interface SelectedState {
 export const useSelectedStore = create<SelectedState>((set) => ({
 	selectedLevel: "Licence 1",
 	selectedSpecialty: "Informatique",
-	activeTab: "overview",
+	activeTab: "Vue d'ensemble",
 
 	handleLevelChange: (selectedLevel) => {
 		set({ selectedLevel });
