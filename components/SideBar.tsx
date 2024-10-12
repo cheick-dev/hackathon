@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
 	Chart as ChartJS,
 	CategoryScale,
@@ -22,6 +22,13 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@/components/ui/popover";
+
 import {
 	Download,
 	Home,
@@ -31,10 +38,16 @@ import {
 	Bell,
 	BarChart2,
 	BookOpen,
+	LogOut,
 } from "lucide-react";
+
 import { useThemeStore } from "@/store/ThemeStore";
 import { useSelectedStore } from "@/store/SelectedStore";
 import { links } from "@/constant/Data";
+import Link from "next/link";
+import { useAuthStore } from "@/store/useAuthStore";
+import { useRouter } from "next/navigation";
+import { avatar } from "@/services/appwrite.config";
 
 ChartJS.register(
 	CategoryScale,
@@ -50,6 +63,8 @@ ChartJS.register(
 
 function SideBar() {
 	const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+	const { user, logout } = useAuthStore();
+	const router = useRouter();
 
 	const { theme } = useThemeStore();
 	const {
@@ -59,13 +74,14 @@ function SideBar() {
 		handleActiveTabChange,
 	} = useSelectedStore();
 
-	const handleExport = () => {
-		console.log("Exporting data...");
-	};
+	const handleExport = () => console.log("Exporting data...");
 
-	const toggleSidebar = () => {
-		setSidebarCollapsed(!sidebarCollapsed);
-	};
+	const toggleSidebar = () => setSidebarCollapsed(!sidebarCollapsed);
+
+	useEffect(() => {
+		const localUser = localStorage.getItem("user");
+		if (!user) router.push("/login");
+	}, [user]);
 
 	return (
 		<aside
@@ -77,6 +93,45 @@ function SideBar() {
 					: "bg-gray-800 text-white"
 			}`}
 		>
+			<div className="mt-2 mb-4">
+				<Popover>
+					<PopoverTrigger className="flex items-center">
+						<Avatar>
+							<AvatarImage src={avatar.getInitials()} />
+							<AvatarFallback>CN</AvatarFallback>
+						</Avatar>
+						{!sidebarCollapsed && (
+							<p className="text-lg font-bold ml-2">
+								{user?.name}
+							</p>
+						)}
+					</PopoverTrigger>
+					<PopoverContent>
+						{/* <Link href="/register">
+							<Button variant="outline" className="w-full">
+								<LogOut className="mr-2" />
+								Inscription
+							</Button>
+						</Link>
+						<div className="h-2" />
+						<Link href="/login">
+							<Button variant="outline" className="w-full">
+								<LogOut className="mr-2" />
+								Connexion
+							</Button>
+						</Link>
+						<div className="h-2" /> */}
+						<Button
+							variant="outline"
+							className="w-full"
+							onClick={logout}
+						>
+							<LogOut className="mr-2" />
+							Déconnexion
+						</Button>
+					</PopoverContent>
+				</Popover>
+			</div>
 			<div className="flex justify-between items-center mb-8">
 				{!sidebarCollapsed && (
 					<h2 className="text-xl font-bold">Dashboard</h2>
@@ -147,6 +202,7 @@ function SideBar() {
 				<ul className="space-y-2 mb-6">
 					{links.map((Link) => (
 						<Button
+							key={Link.name}
 							variant="ghost"
 							className={`w-full ${
 								sidebarCollapsed
@@ -182,10 +238,10 @@ function SideBar() {
 					<Download className="mr-2" />
 					{!sidebarCollapsed && "Exporter"}
 				</Button>
-				<Button variant="outline" className="w-full">
-					<Settings className="mr-2" color="red" />
+				{/* <Button variant="outline" className="w-full">
+					<Settings className="mr-2" />
 					{!sidebarCollapsed && "Paramètres"}
-				</Button>
+				</Button> */}
 			</div>
 		</aside>
 	);
